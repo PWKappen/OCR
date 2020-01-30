@@ -7,6 +7,7 @@ import os
 import completeModel
 from scipy import misc
 
+LOCATION_META = 'metaFile.dat'
 LOCATION_TRANSLATOR = 'D:/MLProjects/OCR2/translations/encoder_decoder_model_1_translator.txt'
 LOCATION_TEST_DATA = 'D:/MLProjects/OCR2/testData.dat'
 LOATION_TRAIN_DATA = 'D:/MLProjects/OCR2/trainData.dat'
@@ -71,17 +72,17 @@ with tf.device("/cpu:0"):
 
     translation = translate(LOCATION_TRANSLATOR)
 
-    batchGen = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', LOCATION_TEST_DATA, batch_size,
+    batchGen = batchGenerator.CustomAsynchBatchLoaderFull(LOCATION_META, LOCATION_TEST_DATA, batch_size,
                                                       50, 30)
     images_batch, labels_batch, seq_len_batch = batchGen.get_inputs()
 
     batchGen.set_translation(translation)
 
-    validGen = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', LOATION_TRAIN_DATA, batch_size,
+    validGen = batchGenerator.CustomAsynchBatchLoaderFull(LOCATION_META, LOATION_TRAIN_DATA, batch_size,
                                                       20, 10)
     images_valid, labels_valid, seq_len_valid = validGen.get_inputs()
     
-    validGen2 = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', LOCATION_VALIDATION_DATA, batch_size,
+    validGen2 = batchGenerator.CustomAsynchBatchLoaderFull(LOCATION_META, LOCATION_VALIDATION_DATA, batch_size,
                                                       100, 10)
     images_valid2, labels_valid2, seq_len_valid2 = validGen2.get_inputs()
 
