@@ -101,9 +101,9 @@ with tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4)) as sess:
 
 
 
-    # ctc = completeModel.CTCSlidingWindow(seq_len_batch, batch_size, num_cells, num_classes,
-    #                                               batchGen.maxWidth, batchGen.maxHeight,
-    #                                               num_layers)
+    ctc = completeModel.CTCSlidingWindow(seq_len_batch, batch_size, num_cells, num_classes,
+                                                  batchGen.maxWidth, batchGen.maxHeight,
+                                                  num_layers)
 
 
 
@@ -113,24 +113,24 @@ with tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4)) as sess:
     #
     #
     #
-    # ctc_cost_builder = model.ctc_cost_builder()
-    # rnn_outputs, keep_prob, time_steps_train, extracted_patches, attentions = ctc.build_model(images_batch, batchGen.maxHeight, 3)
-    # loss, cost, results = ctc_cost_builder(rnn_outputs, labels_batch, seq_len_batch, num_classes, num_cells,
-    #                                        time_steps_train)
-    #
-    # rnn_outputs_valid, keep_prob_valid, time_steps_valid, _, _ = ctc.build_model(images_valid, batchGen.maxHeight, 3)
-    # loss_valid, cost_valid, results_valid = ctc_cost_builder(rnn_outputs_valid, labels_valid, seq_len_valid, num_classes, num_cells,
-    #                                         time_steps_valid)
-    #
-    # result_inv_conv, x_placeholder, size_placeholder = model.inv_conv()
+    ctc_cost_builder = model.ctc_cost_builder()
+    rnn_outputs, keep_prob, time_steps_train, extracted_patches, attentions = ctc.build_model(images_batch, batchGen.maxHeight, 3)
+    loss, cost, results = ctc_cost_builder(rnn_outputs, labels_batch, seq_len_batch, num_classes, num_cells,
+                                           time_steps_train)
+    
+    rnn_outputs_valid, keep_prob_valid, time_steps_valid, _, _ = ctc.build_model(images_valid, batchGen.maxHeight, 3)
+    loss_valid, cost_valid, results_valid = ctc_cost_builder(rnn_outputs_valid, labels_valid, seq_len_valid, num_classes, num_cells,
+                                            time_steps_valid)
+    
+    result_inv_conv, x_placeholder, size_placeholder = model.inv_conv()
 
-    # rnn_outputs_valid2, keep_prob_valid2, time_steps_valid2 = ctc.build_model(images_valid2, batchGen.maxHeight, 3)
-    # loss_valid2, cost_valid2, results_valid2 = ctc_cost_builder(rnn_outputs_valid2, labels_valid2, seq_len_valid2,
-    #                                                          num_classes, num_cells,
-    #                                                          time_steps_valid2)
+    rnn_outputs_valid2, keep_prob_valid2, time_steps_valid2 = ctc.build_model(images_valid2, batchGen.maxHeight, 3)
+    loss_valid2, cost_valid2, results_valid2 = ctc_cost_builder(rnn_outputs_valid2, labels_valid2, seq_len_valid2,
+                                                             num_classes, num_cells,
+                                                             time_steps_valid2)
 
-    ctc = completeModel.EncoderDecoder(batch_size, num_cells, num_classes,
-                                           batchGen.maxWidth, batchGen.maxHeight)
+#     ctc = completeModel.EncoderDecoder(batch_size, num_cells, num_classes,
+#                                            batchGen.maxWidth, batchGen.maxHeight)
 
     oneHot_input = tf.one_hot(labels_batch, num_classes, on_value=1.0, off_value=0.0, dtype=tf.float32)
     results, cost, acc = ctc.build_model(images_batch,seq_len_batch, batchGen.maxHeight, batchGen.maxWidth, True,oneHot_input)
@@ -139,26 +139,26 @@ with tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4)) as sess:
                                                     dtype=tf.float32)
     results_valid, cost_valid, acc_valid = ctc.build_model(images_valid, seq_len_valid, batchGen.maxHeight, batchGen.maxWidth, True,
                                          oneHot_input_valid)
-    # one_hot_input_valid2 = tf.one_hot(labels_valid2, num_classes, on_value=1.0,
-    #                                                                   off_value=0.0,
-    #                                                                   dtype=tf.float32)
-    # results_valid2, cost_valid2, acc_valid2 = ctc.build_model(images_valid2, seq_len_valid2, batchGen.maxHeight,
-    #                                                        batchGen.maxWidth, False,
-    #                                                        one_hot_input_valid2)
-    #
-    # writer = tf.summary.FileWriter(ctc.get_model_name(), sess.graph)
-    # train_step = tf.train.AdamOptimizer(10e-4).minimize(cost)
+    one_hot_input_valid2 = tf.one_hot(labels_valid2, num_classes, on_value=1.0,
+                                                                      off_value=0.0,
+                                                                      dtype=tf.float32)
+    results_valid2, cost_valid2, acc_valid2 = ctc.build_model(images_valid2, seq_len_valid2, batchGen.maxHeight,
+                                                           batchGen.maxWidth, False,
+                                                           one_hot_input_valid2)
+    
+    writer = tf.summary.FileWriter(ctc.get_model_name(), sess.graph)
+    train_step = tf.train.AdamOptimizer(10e-4).minimize(cost)
     saver = tf.train.Saver(keep_checkpoint_every_n_hours=0.5)
 
-    ckpt = tf.train.get_checkpoint_state("D:\MLProjects\OCR2\ckpt_CTC_encoder_run_2")
-    if ckpt and ckpt.model_checkpoint_path:
-        saver.restore(sess, "D:\MLProjects\OCR2\ckpt_CTC_encoder_run_2\ckpt-52000")
-        print('Load successful')
-    else:
-        print("ERROR loading checkpoint")
+#     ckpt = tf.train.get_checkpoint_state("D:\MLProjects\OCR2\ckpt_CTC_encoder_run_2")
+#     if ckpt and ckpt.model_checkpoint_path:
+#         saver.restore(sess, "D:\MLProjects\OCR2\ckpt_CTC_encoder_run_2\ckpt-52000")
+#         print('Load successful')
+#     else:
+#         print("ERROR loading checkpoint")
 
-    # init = tf.global_variables_initializer()
-    # sess.run(init)
+    init = tf.global_variables_initializer()
+    sess.run(init)
 
     tf.train.start_queue_runners(sess=sess)
     batchGen.start_threads(sess=sess, n_threads=1)
