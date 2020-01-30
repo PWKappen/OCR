@@ -7,6 +7,11 @@ import os
 import completeModel
 from scipy import misc
 
+LOCATION_TRANSLATOR = 'D:/MLProjects/OCR2/translations/encoder_decoder_model_1_translator.txt'
+LOCATION_TEST_DATA = 'D:/MLProjects/OCR2/testData.dat'
+LOATION_TRAIN_DATA = 'D:/MLProjects/OCR2/trainData.dat'
+LOCATION_VALIDATION_DATA = 'D:/MLProjects/OCR2/validData.dat'
+
 #saves tensorflow checkpoint
 def save_ckpt(sess, cur_saver, file_path, saved_step):
     direcotry = os.path.dirname(file_path)
@@ -64,21 +69,21 @@ with tf.device("/cpu:0"):
     # images_valid, labels_valid, seq_len_valid = validGen.get_inputs()
 
 
-    translation = translate('D:/MLProjects/OCR2/translations/encoder_decoder_model_1_translator.txt')
+    translation = translate(LOCATION_TRANSLATOR)
 
-    batchGen = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', 'D:/MLProjects/OCR2/testData.dat', batch_size,
+    batchGen = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', LOCATION_TEST_DATA, batch_size,
                                                       50, 30)
     images_batch, labels_batch, seq_len_batch = batchGen.get_inputs()
 
     batchGen.set_translation(translation)
 
-    validGen = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', 'D:/MLProjects/OCR2/trainData.dat', batch_size,
+    validGen = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', LOATION_TRAIN_DATA, batch_size,
                                                       20, 10)
     images_valid, labels_valid, seq_len_valid = validGen.get_inputs()
-    #
-    # validGen2 = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', 'D:/MLProjects/OCR2/validData.dat', batch_size,
-    #                                                   100, 10)
-    # images_valid2, labels_valid2, seq_len_valid2 = validGen2.get_inputs()
+    
+    validGen2 = batchGenerator.CustomAsynchBatchLoaderFull('metaFile.dat', LOCATION_VALIDATION_DATA, batch_size,
+                                                      100, 10)
+    images_valid2, labels_valid2, seq_len_valid2 = validGen2.get_inputs()
 
 
     batchGen.get_max_height()
@@ -158,66 +163,66 @@ with tf.Session(config=tf.ConfigProto(intra_op_parallelism_threads=4)) as sess:
     tf.train.start_queue_runners(sess=sess)
     batchGen.start_threads(sess=sess, n_threads=1)
     validGen.start_threads(sess=sess, n_threads=1)
-    # validGen2.start_threads(sess=sess, n_threads=1)
-    #
-    # ce_summary = tf.summary.scalar('cross entropy', cost)
-    # ce_summary2 = tf.summary.scalar('cross entropy valid', cost_valid)
-    #
-    # cer_placeholder = tf.placeholder(dtype=tf.float32, shape=[])
-    # cer_summary = tf.summary.scalar('cer', cer_placeholder)
-    #
-    # cer_placeholder_full = tf.placeholder(dtype=tf.float32, shape=[])
-    # cer_summary_full = tf.summary.scalar('cer_full', cer_placeholder_full)
-    #
-    # for i in range(1500001):
-    #     _, co, res, lb, ce_sum = sess.run([train_step, cost, results, labels_batch, ce_summary])
-    #     if i % 10 == 0:
-    #         writer.add_summary(ce_sum, i)
-    #         print("Step %d, Cross Entropy: %g" % (i, co))
-    #         if i % 100 == 0:
-    #             co, res, lb = sess.run([cost_valid, results_valid, labels_valid])
-    #
-    #             wer = list()
-    #
-    #             for k_idx, k in enumerate(res):
-    #                 correct_string = validGen.decode_Num(lb[k_idx])
-    #                 print(correct_string)
-    #                 decoded = validGen2.decode_Num(k, lb[k_idx])
-    #                 # real_string = ''
-    #                 # for j in decoded:
-    #                 #     real_string += j
-    #                 #     if j == chr(3):
-    #                 #         break
-    #                 print(decoded)
-    #                 wer.append(utility.wer(correct_string, decoded))
-    #             average_wer = np.average(wer)
-    #             print("Step %d, Cross Entropy: %g" % (i, co))
-    #             print(average_wer)
-    #
-    #             #merged = tf.summary.merge_all()
-    #
-    #             c1, c2, cer1 = sess.run([ce_summary, ce_summary2, cer_summary], feed_dict={cer_placeholder:average_wer})
-    #             writer.add_summary(c1, i)
-    #             writer.add_summary(c2, i)
-    #             writer.add_summary(cer1, i)
-    #
-    #             if i % 2000 == 0:
-    #                  file_path = "D:\MLProjects\OCR2\ckpt_" + ctc.get_model_name() + '\ckpt'
-    #                  save_ckpt(sess, saver, file_path, i)
-    #             if i % 1000 == 0:
-    #                 wer = list()
-    #                 while not validGen2.end(sess):
-    #                     res, lb = sess.run([results_valid2, labels_valid2])
-    #                     for k_idx, k in enumerate(res):
-    #                         correct_string = batchGen.decode_Num(lb[k_idx])
-    #                         decoded = validGen2.decode_Num(k, lb[k_idx])
-    #                         wer.append(utility.wer(correct_string, decoded))
-    #
-    #                 average_wer = np.average(wer)
-    #                 print("Step %d, Average CER validation set: %g" % (i, average_wer))
-    #                 c5 = sess.run(cer_summary_full, feed_dict={cer_placeholder_full: average_wer})
-    #                 writer.add_summary(c5, i)
-    #                 validGen2.reset()
+    validGen2.start_threads(sess=sess, n_threads=1)
+    
+    ce_summary = tf.summary.scalar('cross entropy', cost)
+    ce_summary2 = tf.summary.scalar('cross entropy valid', cost_valid)
+    
+    cer_placeholder = tf.placeholder(dtype=tf.float32, shape=[])
+    cer_summary = tf.summary.scalar('cer', cer_placeholder)
+    
+    cer_placeholder_full = tf.placeholder(dtype=tf.float32, shape=[])
+    cer_summary_full = tf.summary.scalar('cer_full', cer_placeholder_full)
+    
+    for i in range(1500001):
+        _, co, res, lb, ce_sum = sess.run([train_step, cost, results, labels_batch, ce_summary])
+        if i % 10 == 0:
+            writer.add_summary(ce_sum, i)
+            print("Step %d, Cross Entropy: %g" % (i, co))
+            if i % 100 == 0:
+                co, res, lb = sess.run([cost_valid, results_valid, labels_valid])
+    
+                wer = list()
+    
+                for k_idx, k in enumerate(res):
+                    correct_string = validGen.decode_Num(lb[k_idx])
+                    print(correct_string)
+                    decoded = validGen2.decode_Num(k, lb[k_idx])
+                    # real_string = ''
+                    # for j in decoded:
+                    #     real_string += j
+                    #     if j == chr(3):
+                    #         break
+                    print(decoded)
+                    wer.append(utility.wer(correct_string, decoded))
+                average_wer = np.average(wer)
+                print("Step %d, Cross Entropy: %g" % (i, co))
+                print(average_wer)
+    
+                #merged = tf.summary.merge_all()
+    
+                c1, c2, cer1 = sess.run([ce_summary, ce_summary2, cer_summary], feed_dict={cer_placeholder:average_wer})
+                writer.add_summary(c1, i)
+                writer.add_summary(c2, i)
+                writer.add_summary(cer1, i)
+    
+                if i % 2000 == 0:
+                     file_path = "D:\MLProjects\OCR2\ckpt_" + ctc.get_model_name() + '\ckpt'
+                     save_ckpt(sess, saver, file_path, i)
+                if i % 1000 == 0:
+                    wer = list()
+                    while not validGen2.end(sess):
+                        res, lb = sess.run([results_valid2, labels_valid2])
+                        for k_idx, k in enumerate(res):
+                            correct_string = batchGen.decode_Num(lb[k_idx])
+                            decoded = validGen2.decode_Num(k, lb[k_idx])
+                            wer.append(utility.wer(correct_string, decoded))
+    
+                    average_wer = np.average(wer)
+                    print("Step %d, Average CER validation set: %g" % (i, average_wer))
+                    c5 = sess.run(cer_summary_full, feed_dict={cer_placeholder_full: average_wer})
+                    writer.add_summary(c5, i)
+                    validGen2.reset()
 
     def word_distribution(fileName, folder, cur_sess, labels, result, loader):
         dictionary = dict()
