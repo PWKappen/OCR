@@ -3,6 +3,8 @@ Optical Character Recognition Tensorflow Models
 
 This is a Tensorflow implementation of an Optical Character Recognition architecture I implemented during my master’s thesis. It was applied on the IAM dataset.  
 http://www.fki.inf.unibe.ch/databases/iam-handwriting-database  
+
+##  Explanation
 The architecture consists of an encoder module in form of a CNN, a GRU based RNN module which contains an attention mechanism to attend to different parts of the input selectively. To reduce the memory requirements and to handle various wide images a sliding window-based approach was taken. The image is encoded by a CNN and then cut up into several pieces that is determined by the width of each window, and the offset of each window (They can overlap. It is similar on how the size of a convolution result is determined). An example word and the first four windows can be found in the following figures:  
 ![](images/29.png)  
 ![](images/29_0.png)
